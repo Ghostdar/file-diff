@@ -1,0 +1,21 @@
+{
+  "name": "file-diff",
+  "version": "1.0.0",
+  "description": "a challenge to find the same line between two large files ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start-fileStream": "node --max-old-space-size=4  ./readFileStream.js",
+    "start-fileEventStream": "node --max-old-space-size=4 ./readFileEventStream.js"
+  },
+  "author": "nero",
+  "license": "ISC",
+  "dependencies": {
+    "event-stream": "^4.0.1",
+    "lei-stream": "^1.4.2",
+    "performance-now": "^2.1.0"
+  },
+  "devDependencies": {
+    "mkdirp": "^1.0.4"
+  }
+}
