@@ -25,7 +25,7 @@ const creatFile = async (fileSrc, lineNum, size) => {
     const file = fs.createWriteStream(fileSrc);
     for(let  i = 0;i<=lineNum;i++) {
         const state = fs.statSync(fileSrc);
-        if(state.size > 1024*1024* size ) {
+        if(state.size > 1000*1000* size ) {
             return;
         }
         await write(file, `${Random(10)}\n`);
@@ -34,8 +34,8 @@ const creatFile = async (fileSrc, lineNum, size) => {
 }
 
 const main = async () => {
-    // await creatFile('./mock/big-file-1.txt', Math.pow(10, 10))
-    await creatFile('./mock/file-1g.txt', Math.pow(10, 10) , 1024)
+    // await creatFile('./mock/file-500.txt', Math.pow(10, 10))
+    await creatFile('./mock/file-500-1.txt', Math.pow(10, 10) , 500)
 }
 
 main();

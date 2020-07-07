@@ -2,9 +2,8 @@ const fs = require('fs');
 const readline = require('readline');
 const stream = require('stream');
 const now = require('performance-now');
-
-
-const fileStream1 = fs.createReadStream('./mock/big-file-1.txt');
+const {printMemoryUsage} = require('./lib/util');
+const fileStream1 = fs.createReadStream('./mock/file-10g-1.txt');
 const outstream1 = new stream();
 
 const rl = readline.createInterface(fileStream1, outstream1);
@@ -17,7 +16,6 @@ console.time('line count');
 
 rl.on('line', function(line) {
   // hash[line] = line;
-
 });
 
 rl.on('close', function() {
@@ -28,4 +26,4 @@ rl.on('close', function() {
   );
 });
 
-
+// setInterval(  printMemoryUsage, 1000)

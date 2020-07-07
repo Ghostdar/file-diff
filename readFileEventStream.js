@@ -1,7 +1,6 @@
 var fs = require('fs');
 var es = require('event-stream');
 var now = require('performance-now');
-
 var totalLines = 0;
 var t0 = now();
 var t1;
@@ -9,7 +8,7 @@ var t1;
 console.time('line count');
 
 var s = fs
-  .createReadStream('./mock/big-file-1.txt')
+  .createReadStream('./mock/file-10g-1.txt')
   .pipe(es.split())
   .pipe(
     es

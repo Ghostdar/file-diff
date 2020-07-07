@@ -1,9 +1,10 @@
 var fs = require('fs');
 var now = require('performance-now');
+require('xprofiler').start();
 
 var totalLines = 0;
 
-fs.readFile('./mock/file-400.txt', 'utf8', (err, contents) => {
+fs.readFile('./mock/file-500-1.txt', 'utf8', (err, contents) => {
   console.time('line count');
   let t0 = now();
   if (contents !== undefined) {

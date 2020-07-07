@@ -2,22 +2,24 @@ const fs = require('fs');
 const now = require('performance-now');
 const { promisify } = require('util');
 const { HASH } = require('./lib/util');
-const { delDir, readFileByEventStream, isFileExit} = require('./lib/file');
+const { delDir, readFileStream, isFileExit,fileSplitNum} = require('./lib/file');
 const mkdirp = require('mkdirp');
 
 // 比较的文件名
 // const file1Name = 'test-file-1';
 // const file2Name = 'test-file-2';
-const file1Name = 'big-file-1';
-const file2Name = 'big-file-2';
+const file1Name = 'file-500-1';
+const file2Name = 'file-500-2';
 // 比较文件目录前缀
 const testFilePre = './mock';
 // 拆分文件暂存的目录前缀
 const tempSrcPre = './temp';
 // 结果文件路径
-const resultFile = './result/result.txt'
+const resultFile = './result2/result.txt'
 // 拆分文件的数量
-const fileNum = 10;
+let fileNum = 10;
+
+let sameLine = 0;
 
 // 一次写入文件的阈值
 const writDataLine = 100;
@@ -52,7 +54,7 @@ const fileSplit = async (fileName) => {
     const cache = {};
     const status = {};
     let totalLines = 0;
-    await readFileByEventStream(fileSrc, line => {
+    await readFileStream(fileSrc, line => {
         totalLines++;
         writeLine(line, fileName, cache, status);
     }, () => {
@@ -71,21 +73,21 @@ const fileSplit = async (fileName) => {
 }
 // 比较两个文件
 const diff = async (fileSrc1, fileSrc2) => {
-    let hashTable = new Map()
+    let hashTable = new Map();
     // 读取文件a，建立hashtable
-    await readFileByEventStream(fileSrc1, line => {
+    await readFileStream(fileSrc1, line => {
         line && hashTable.set(line, 1)
     })
     // 读取文件b
     let cache = [];
     let status = false;
-    await readFileByEventStream(fileSrc2, async (line) => {
+    await readFileStream(fileSrc2, async (line) => {
         // 有重复，写入文件
         if (line && hashTable.has(line)) {
+            sameLine++;
             cache.push(line);
             // 缓存数据大于阈值，写入文件
             if (cache.length >= writDataLine && !status) {
-                console.log(cache.length);
                 const text = cache.join('\n')
                 cache = [];
                 status = true;
@@ -95,6 +97,8 @@ const diff = async (fileSrc1, fileSrc2) => {
             }
         }
     }, async () => {
+        hashTable.clear();
+        hashTable = null;
         if(cache.length > 0) {
             const text = cache.join('\n')
             //兜底，写入剩余数据
@@ -102,8 +106,6 @@ const diff = async (fileSrc1, fileSrc2) => {
         }
 
     })
-    hashTable.clear()
-    hashTable = null;
 }
 
 
@@ -111,10 +113,11 @@ async function main() {
     // 预处理
     const t0 = now()
     delDir('./temp')
-    fs.unlinkSync(resultFile)
+    // fs.unlinkSync(resultFile)
     await mkdirp(tempSrcPre)
     await mkdirp(`${tempSrcPre}/${file1Name}`)
     await mkdirp(`${tempSrcPre}/${file2Name}`)
+    fileNum = Math.max(await fileSplitNum(`${testFilePre}/${file1Name}.txt`), await fileSplitNum(`${testFilePre}/${file2Name}.txt`), 10)
     const t1 = now()
     // 大文件分片
     await fileSplit(file1Name);
@@ -132,6 +135,7 @@ async function main() {
         }
     }
     const t4 = now()
+    console.log('相同行数：', sameLine)
     console.log('diff耗时:', (t4 - t3).toFixed(3) + 'ms')
     console.log('程序耗时:', (t4 - t0).toFixed(3) + 'ms')
 }

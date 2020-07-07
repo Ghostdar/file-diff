@@ -25,7 +25,6 @@ process.on('message', async ({ eventName, data }) => {
         process.send({ isEnd: true });
         return;
     }
-    console.log('zi', data)
     data.length > 0 && cache.push(...data);
     await runTask(writDataLine);
 })

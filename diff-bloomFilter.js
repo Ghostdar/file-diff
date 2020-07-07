@@ -1,31 +1,34 @@
 const fs = require('fs');
 const now = require('performance-now');
 const { promisify } = require('util');
-const { readFileByEventStream, isFileExit } = require('./lib/file');
+const { readFileStream, isFileExit } = require('./lib/file');
 const { BloomFilter } = require('./lib/bloomFilter');
 // 比较的文件名
-const file1Name = 'test-file-1';
-const file2Name = 'test-file-2';
+const file1Name = 'file-500-1';
+const file2Name = 'file-500-2';
 // 比较文件目录前缀
 const testFilePre = './mock';
 // 结果文件路径
-const resultFile = './result/result.txt';
+const resultFile = './result2/result.txt';
 // 一次写入文件的阈值
 const writDataLine = 100;
 
+let sameLine = 0;
+
 // 比较两个文件
 const diff = async (fileSrc1, fileSrc2) => {
-    let bloom = new BloomFilter(Math.pow(10, 8), 16);
+    let bloom = new BloomFilter(Math.pow(10, 8), 100);
     // 读取文件a，建立hashtable
-    await readFileByEventStream(fileSrc1, line => {
+    await readFileStream(fileSrc1, line => {
         line && bloom.add(line);
     })
     // 读取文件b
     let cache = [];
     let status = false;
-    await readFileByEventStream(fileSrc2, async (line) => {
+    await readFileStream(fileSrc2, async (line) => {
         // 有重复，写入文件
         if (line && bloom.test(line)) {
+            sameLine += 1;
             cache.push(line);
             // 缓存数据大于阈值，写入文件
             if (cache.length >= writDataLine && !status) {
@@ -60,6 +63,7 @@ async function main() {
     const fileSrc2 = `${testFilePre}/${file2Name}.txt`;
     await diff(fileSrc1, fileSrc2);
     const t2 = now();
+    console.log('相同行数', sameLine);
     console.log('diff耗时:', (t2 - t1).toFixed(3) + 'ms');
     console.log('程序耗时:', (t2 - t0).toFixed(3) + 'ms');
 }
